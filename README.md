@@ -1,12 +1,12 @@
 # PRD Agent
-**A guided product thinking system for early-stage founders.**
-Not a chatbot. A structured thinking tool that helps you clarify a rough idea and turn it into a real Product Requirements Document — through adaptive, stage-by-stage questioning.
-🔗 **Live demo:** `https://anushka644.github.io/PRD-agent/`
+### **A guided product thinking system for early-stage founders.**
+#### Not a chatbot. A structured thinking tool that helps you clarify a rough idea and turn it into a real Product Requirements Document — through adaptive, stage-by-stage questioning.
+#### 🔗 **Live demo:** `https://anushka644.github.io/PRD-agent/`
 ---
 ## What it does
 Most founders jump straight to solutions before understanding the problem. PRD Agent forces structured thinking through 7 stages:
-**Problem → Users → Pain Points → Solution → Features → Metrics → Overview**
-At each stage, the agent asks one sharp question at a time, pushes back on vague answers, and builds your PRD progressively in real time.
+#### **Problem → Users → Pain Points → Solution → Features → Metrics → Overview**
+#### At each stage, the agent asks one sharp question at a time, pushes back on vague answers, and builds your PRD progressively in real time.
 ---
 ## Features
 | Feature | Description |
@@ -61,8 +61,10 @@ The file includes a Groq API key for local use. To use your own:
 When running inside **claude.ai**, the Anthropic API is used automatically — no key needed.
 ---
 ## Screenshots
-> <img width="2848" height="1344" alt="image" src="https://github.com/user-attachments/assets/b0c212cb-6be8-455e-8d37-f6c2f14b13f3" />
-> <img width="2842" height="1358" alt="image" src="https://github.com/user-attachments/assets/aef7b063-54c4-4ea8-9b43-ebaee1a1fe50" />
+> <img width="2852" height="1434" alt="image" src="https://github.com/user-attachments/assets/6d562d5f-6828-48fd-b1b8-783d238e5f55" />
+
+> <img width="2850" height="1434" alt="image" src="https://github.com/user-attachments/assets/488f08a4-3055-4d96-8c65-b9f649a07e34" />
+
 ---
 ## Roadmap
 - [ ] Sharable PRD links
