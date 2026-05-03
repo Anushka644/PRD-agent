@@ -1,0 +1,2393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD Agent — Think Clearly, Build Better</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --bg:        #f7f6f2;
+  --surface:   #ffffff;
+  --surface2:  #f2f1ed;
+  --border:    #e4e2d9;
+  --border2:   #cbc9bf;
+  --text:      #18170f;
+  --text2:     #3f3d33;
+  --muted:     #9a9888;
+  --accent:    #2a6b3f;
+  --accent-l:  #e6f3eb;
+  --accent-ll: #f0f8f3;
+  --accent2:   #1b5a8a;
+  --user-bg:   #edf2ff;
+  --user-br:   #c0cfee;
+  --think-bg:  #fffbef;
+  --think-br:  #e8d48a;
+  --think-tx:  #6b5520;
+  --aha-bg:    #fff8f0;
+  --aha-br:    #f5c089;
+  --aha-tx:    #92400e;
+  --done-bg:   #f0faf4;
+  --done-br:   #6ee7a0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.logo-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2.4s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:.4; transform:scale(.7); }
+}
+
+.header-center { flex: 1; display: flex; justify-content: center; }
+
+.mode-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.mode-tab {
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  transition: all .15s;
+}
+
+.mode-tab.active { background: var(--accent); color: #fff; }
+.mode-tab:hover:not(.active) { color: var(--text); background: var(--border); }
+
+.header-right { display: flex; gap: 7px; align-items: center; flex-shrink: 0; }
+
+.btn {
+  padding: 6px 13px;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: #1f5230; border-color: #1f5230; color: #fff; }
+.btn.prd-on { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
+
+/* ── STAGE RAIL ── */
+.stage-rail {
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.stage-rail::-webkit-scrollbar { display: none; }
+
+.stage-item { display: flex; align-items: center; flex-shrink: 0; }
+
+.stage-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 13px;
+  background: transparent;
+  border: none;
+  cursor: default;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  position: relative;
+  transition: color .2s;
+  white-space: nowrap;
+}
+
+.stage-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all .3s;
+}
+
+.stage-item.done .stage-btn { color: var(--accent); }
+.stage-item.done .stage-num { background: var(--accent); color: #fff; }
+.stage-item.active .stage-btn { color: var(--text); font-weight: 600; }
+.stage-item.active .stage-num { background: var(--accent2); color: #fff; }
+.stage-item.active .stage-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent2);
+  border-radius: 2px 2px 0 0;
+}
+
+.stage-arrow { color: var(--border2); font-size: 11px; padding: 0 2px; flex-shrink: 0; }
+
+/* ── MAIN ── */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── CHAT PANEL ── */
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bg);
+}
+
+.chat-header {
+  padding: 11px 22px 9px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stage-focus {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 1px;
+}
+
+.chat-heading {
+  font-family: 'DM Serif Display', serif;
+  font-size: 17px;
+  font-style: italic;
+  color: var(--text);
+}
+
+.stage-pill {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--accent-ll);
+  border: 1px solid var(--accent-l);
+  color: var(--accent);
+}
+
+/* Product name chip in chat header */
+.product-name-chip {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 5px 10px 5px 12px;
+}
+.product-name-chip.visible {
+  display: flex;
+  animation: chipPop .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes chipPop {
+  from { opacity:0; transform:scale(.85) translateY(-4px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+.product-name-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.product-name-input {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--text);
+  border: none;
+  background: transparent;
+  outline: none;
+  min-width: 120px;
+  max-width: 260px;
+  cursor: text;
+  padding: 1px 2px;
+  border-radius: 3px;
+  transition: background .14s;
+}
+.product-name-input:hover, .product-name-input:focus { background: var(--bg); }
+.product-name-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--accent-l);
+  color: var(--accent);
+  font-weight: 600;
+  flex-shrink: 0;
+  animation: fadeIn .4s ease;
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+/* ── MESSAGES ── */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  scroll-behavior: smooth;
+}
+
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Fade older messages slightly */
+.msg { display: flex; flex-direction: column; gap: 4px; animation: up .22s ease; max-width: 800px; }
+.msg.old { opacity: 0.65; }
+
+@keyframes up {
+  from { opacity:0; transform:translateY(5px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.msg-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.msg.ai .msg-label { color: var(--accent); }
+.msg.user { align-items: flex-end; align-self: flex-end; max-width: 76%; }
+.msg.user .msg-label { color: var(--accent2); }
+
+.bubble {
+  padding: 13px 17px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.76;
+}
+
+.msg.ai .bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top-left-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  color: var(--text);
+}
+
+.msg.ai.current-q .bubble {
+  border-color: var(--accent2);
+  border-left: 3px solid var(--accent2);
+  background: #fafcff;
+}
+
+.msg.user .bubble {
+  background: var(--user-bg);
+  border: 1px solid var(--user-br);
+  border-top-right-radius: 3px;
+  color: var(--text);
+}
+
+/* Markdown */
+.bubble h1 { font-family: 'DM Serif Display', serif; font-size: 19px; font-style: italic; color: var(--text); margin: 14px 0 7px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+.bubble h2 { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--text); margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+.bubble h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); margin: 14px 0 5px; }
+.bubble h3:not(:first-child) { padding-top: 10px; border-top: 1px solid var(--border); }
+.bubble p { margin: 5px 0; }
+.bubble p:first-child { margin-top: 0; }
+.bubble p:last-child { margin-bottom: 0; }
+.bubble strong { font-weight: 600; color: var(--text); }
+.bubble em { font-style: italic; color: var(--accent2); }
+.bubble ul, .bubble ol { margin: 7px 0 7px 20px; display: flex; flex-direction: column; gap: 5px; }
+.bubble li { color: var(--text2); }
+.bubble code { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 12px; font-family: 'Courier New', monospace; color: var(--accent2); }
+.bubble hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+/* Thinking block */
+.think-block {
+  background: var(--think-bg);
+  border: 1px solid var(--think-br);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--think-tx);
+  line-height: 1.65;
+}
+.think-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #a08030; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.think-block ul { margin-left: 16px; }
+.think-block li { margin: 2px 0; }
+
+/* ── AHA MOMENT ── */
+.aha-card {
+  background: var(--aha-bg);
+  border: 1px solid var(--aha-br);
+  border-radius: 12px;
+  padding: 18px 20px;
+  animation: up .4s ease;
+}
+.aha-eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--aha-tx);
+  margin-bottom: 8px;
+  opacity: .8;
+}
+.aha-sentence {
+  font-family: 'DM Serif Display', serif;
+  font-size: 17px;
+  line-height: 1.45;
+  color: #78350f;
+  font-style: italic;
+}
+.aha-sub {
+  font-size: 12px;
+  color: var(--aha-tx);
+  margin-top: 10px;
+  opacity: .75;
+}
+
+/* ── COMPLETION CARD ── */
+.done-card {
+  background: var(--done-bg);
+  border: 1px solid var(--done-br);
+  border-radius: 12px;
+  padding: 20px 22px;
+  animation: up .4s ease;
+  text-align: center;
+}
+.done-icon { font-size: 32px; margin-bottom: 10px; }
+.done-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.done-sub { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+.done-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.done-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  transition: all .15s;
+}
+.done-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.done-btn.primary:hover { background: #1f5230; }
+.done-btn:not(.primary):hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── CHECKPOINT ── */
+.checkpoint-card {
+  background: var(--surface);
+  border: 1px solid var(--accent-l);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 16px 18px;
+  animation: up .3s ease;
+}
+.checkpoint-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.checkpoint-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.checkpoint-row { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.5; align-items: flex-start; }
+.checkpoint-row-label { font-weight: 600; color: var(--text); flex-shrink: 0; min-width: 90px; }
+.checkpoint-row-val { color: var(--text2); }
+.cp-confidence {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.cp-confidence.strong { background: var(--accent-l); color: var(--accent); }
+.cp-confidence.medium { background: #fef9c3; color: #854d0e; }
+.cp-confidence.weak   { background: #fee2e2; color: #991b1b; }
+.checkpoint-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.cp-btn {
+  padding: 7px 16px;
+  border-radius: 7px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  transition: all .15s;
+}
+.cp-btn.continue { background: var(--accent); border-color: var(--accent); color: #fff; }
+.cp-btn.continue:hover { background: #1f5230; }
+.cp-btn:not(.continue):hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* Stage banner & confirm */
+.stage-banner {
+  background: var(--accent-ll);
+  border: 1px solid var(--accent-l);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: up .25s ease;
+}
+
+.confirm-flash {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+  padding: 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  animation: up .2s ease;
+  transition: opacity .5s;
+}
+
+/* Quick mode steps */
+.quick-steps {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: up .25s ease;
+}
+.quick-step { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); transition: color .3s; }
+.quick-step.active { color: var(--accent2); font-weight: 500; }
+.quick-step.done { color: var(--accent); }
+.quick-step-icon {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; flex-shrink: 0; transition: all .3s;
+}
+.quick-step.active .quick-step-icon { border-color: var(--accent2); background: var(--user-bg); }
+.quick-step.done .quick-step-icon { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+/* Typing dots */
+.typing {
+  display: flex; gap: 5px; align-items: center;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  border-top-left-radius: 3px;
+  width: fit-content;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+.dot:nth-child(2) { animation-delay: .2s; }
+.dot:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%,80%,100% { opacity:.2; } 40% { opacity:1; } }
+
+/* ── INPUT AREA ── */
+.input-area {
+  padding: 12px 22px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.input-context {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent2);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-context-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); opacity: .6; }
+
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 9px; }
+
+.chip {
+  padding: 4px 11px;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  transition: all .14s;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-l); }
+
+.input-box {
+  display: flex;
+  gap: 9px;
+  align-items: flex-end;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 9px 12px;
+  transition: border-color .18s, box-shadow .18s;
+}
+.input-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(42,107,63,.09); }
+
+#userInput {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px;
+  line-height: 1.5; resize: none; max-height: 120px; min-height: 22px;
+}
+#userInput::placeholder { color: var(--muted); }
+
+.send-btn {
+  background: var(--accent); border: none; color: #fff;
+  width: 34px; height: 34px; border-radius: 7px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 16px; transition: all .14s;
+}
+.send-btn:hover { background: #1f5230; transform: scale(1.04); }
+.send-btn:disabled { background: var(--border2); cursor: not-allowed; transform: none; }
+.input-hint { font-size: 11px; color: var(--muted); margin-top: 7px; text-align: center; }
+
+/* ── PRD PANEL ── */
+.prd-panel {
+  width: 0; overflow: hidden; display: flex; flex-direction: column;
+  background: var(--surface); border-left: none; flex-shrink: 0;
+  transition: width .32s cubic-bezier(.4,0,.2,1), border .32s;
+}
+.prd-panel.open { width: 330px; border-left: 1px solid var(--border); }
+.prd-inner { width: 330px; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+
+.prd-top { padding: 12px 16px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--surface2); }
+.prd-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.prd-name-row { display: flex; align-items: center; gap: 5px; }
+
+#prdTitle {
+  font-family: 'DM Serif Display', serif; font-size: 16px; font-style: italic; color: var(--text);
+  border: none; background: transparent; outline: none; flex: 1; cursor: text;
+  padding: 2px 4px; border-radius: 4px; transition: background .14s; min-width: 0;
+}
+#prdTitle:hover, #prdTitle:focus { background: var(--bg); }
+.edit-icon { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+
+.prd-scroll { flex: 1; overflow-y: auto; padding: 12px; }
+.prd-scroll::-webkit-scrollbar { width: 3px; }
+.prd-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.prd-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+.prd-card-hd { background: var(--accent); color: #fff; padding: 12px 14px; }
+.prd-card-hd h2 { font-family: 'DM Serif Display', serif; font-size: 14px; font-weight: normal; font-style: italic; margin-bottom: 2px; }
+.prd-card-hd p { font-size: 10px; opacity: .75; }
+
+.prd-sec { padding: 9px 14px; border-top: 1px solid var(--border); transition: background .4s; }
+.prd-sec.flash { background: var(--accent-ll); }
+
+.prd-sec-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.prd-sec-status { margin-left: auto; font-size: 10px; color: var(--accent); font-weight: 500; }
+.prd-confidence { font-size: 9px; padding: 1px 6px; border-radius: 10px; font-weight: 600; margin-left: 4px; }
+.prd-confidence.strong { background: var(--accent-l); color: var(--accent); }
+.prd-confidence.medium { background: #fef9c3; color: #854d0e; }
+.prd-confidence.weak   { background: #fee2e2; color: #991b1b; }
+
+.sn { width: 16px; height: 16px; border-radius: 50%; background: var(--accent-l); color: var(--accent); font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sn.done { background: var(--accent); color: #fff; }
+
+.prd-sec-body { font-size: 11.5px; line-height: 1.62; color: var(--text2); }
+.prd-sec-body.empty { color: var(--muted); font-style: italic; }
+.prd-sec-hint { font-size: 10px; color: var(--muted); margin-top: 3px; font-style: italic; }
+
+.prd-foot { padding: 9px 14px; border-top: 1px solid var(--border); background: var(--surface2); flex-shrink: 0; }
+.prog-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+.prog-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .7s cubic-bezier(.34,1.56,.64,1); }
+
+/* ── WELCOME ── */
+.welcome {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100%; text-align: center; padding: 24px 20px 20px;
+}
+.w-icon { font-size: 34px; margin-bottom: 12px; }
+.w-title { font-family: 'DM Serif Display', serif; font-size: 26px; font-style: italic; color: var(--text); line-height: 1.2; margin-bottom: 8px; }
+.w-sub { font-size: 13.5px; color: var(--muted); line-height: 1.6; max-width: 420px; margin-bottom: 20px; }
+.w-cards { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; max-width: 780px; }
+.w-card { border: 1px solid var(--border2); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all .18s; background: var(--surface); text-align: left; flex: 1; min-width: 180px; max-width: 240px; }
+.w-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(42,107,63,.1); }
+.w-card-icon { font-size: 18px; margin-bottom: 8px; }
+.w-card-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.w-card-desc { font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+/* KEY INSIGHT CARD */
+.insight-card {
+  background: #f0f4ff;
+  border: 1px solid #c7d2fe;
+  border-left: 3px solid var(--accent2);
+  border-radius: 12px;
+  padding: 18px 20px;
+  animation: up .4s ease;
+}
+.insight-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 10px;
+}
+.insight-body {
+  font-size: 14px;
+  line-height: 1.72;
+  color: #1e2a4a;
+}
+.insight-body p { margin: 0 0 8px; }
+.insight-body p:last-child { margin-bottom: 0; }
+
+/* PRD nudge (weak content warning) */
+.prd-sec-nudge {
+  color: #b45309 !important;
+  font-style: normal !important;
+}
+
+/* ── SESSIONS SIDEBAR ── */
+.sessions-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.3);
+  z-index: 900; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.sessions-overlay.open { opacity: 1; pointer-events: all; }
+
+.sessions-panel {
+  position: fixed; left: 0; top: 0; bottom: 0;
+  width: 300px; background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 901; transform: translateX(-100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column;
+  box-shadow: 4px 0 24px rgba(0,0,0,.1);
+}
+.sessions-panel.open { transform: translateX(0); }
+
+.sessions-hd {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.sessions-hd-title {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; color: var(--text);
+}
+.sessions-close {
+  width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent;
+  cursor: pointer; color: var(--muted); font-size: 16px; display: flex; align-items: center;
+  justify-content: center; transition: all .14s;
+}
+.sessions-close:hover { background: var(--bg); color: var(--text); }
+
+.sessions-list { flex: 1; overflow-y: auto; padding: 10px; }
+.sessions-list::-webkit-scrollbar { width: 3px; }
+.sessions-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.session-item {
+  padding: 11px 13px; border-radius: 8px; cursor: pointer;
+  transition: background .14s; margin-bottom: 4px;
+  border: 1px solid transparent;
+}
+.session-item:hover { background: var(--bg); border-color: var(--border); }
+.session-item.active-session { background: var(--accent-ll); border-color: var(--accent-l); }
+
+.session-item-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.session-item-meta { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.session-item-pct { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 10px; background: var(--accent-l); color: var(--accent); }
+.session-item-del { margin-left: auto; opacity: 0; font-size: 12px; color: var(--muted); padding: 2px 5px; border-radius: 4px; transition: all .12s; }
+.session-item:hover .session-item-del { opacity: 1; }
+.session-item-del:hover { color: #dc2626; background: #fee2e2; }
+
+.sessions-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+.sessions-ft {
+  padding: 12px 10px; border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.sessions-new-btn {
+  width: 100%; padding: 9px; border-radius: 8px; border: 1px dashed var(--border2);
+  background: transparent; color: var(--muted); font-family: "Inter", sans-serif;
+  font-size: 13px; cursor: pointer; transition: all .14s;
+}
+.sessions-new-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-ll); }
+
+/* ── API KEY MODAL ── */
+.key-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,14,10,.55);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9000;
+  animation: fadeIn .2s ease;
+}
+.key-overlay.hidden { display: none; }
+
+.key-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 32px 28px;
+  width: 440px;
+  max-width: calc(100vw - 40px);
+  box-shadow: 0 24px 64px rgba(0,0,0,.18);
+  animation: modalUp .28s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modalUp {
+  from { opacity:0; transform:translateY(16px) scale(.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+.key-modal-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--accent);
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 20px;
+}
+.key-modal-logo-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); }
+
+.key-modal h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.key-modal p {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+
+.key-modal p a {
+  color: var(--accent2);
+  text-decoration: none;
+  font-weight: 500;
+}
+.key-modal p a:hover { text-decoration: underline; }
+
+.key-input-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.key-input {
+  flex: 1;
+  padding: 10px 13px;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.key-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(42,107,63,.09);
+}
+.key-input::placeholder { color: var(--muted); }
+
+.key-input.error { border-color: #dc2626; }
+
+.key-save-btn {
+  padding: 10px 18px;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+}
+.key-save-btn:hover { background: #1f5230; }
+
+.key-error {
+  font-size: 12px;
+  color: #dc2626;
+  margin-bottom: 10px;
+  display: none;
+}
+.key-error.show { display: block; }
+
+.key-note {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.55;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 7px;
+}
+.key-note-icon { flex-shrink: 0; }
+
+.key-change-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all .14s;
+}
+.key-change-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--text); color: #fff; padding: 9px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; z-index: 2000; opacity: 0; transform: translateY(8px);
+  transition: all .22s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="logo-dot"></div>PRD AGENT</div>
+  <div class="header-center">
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="setMode('guided')">Guided PM</button>
+      <button class="mode-tab" onclick="setMode('founder')">Founder</button>
+      <button class="mode-tab" onclick="setMode('quick')">Quick Draft</button>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn" onclick="toggleSessions()">☰ Sessions</button>
+    <button class="btn" id="keyBtn" onclick="showKeyModal()" title="Groq API Key">🔑</button>
+    <button class="btn" id="prdBtn" onclick="togglePRD()">◧ Live PRD</button>
+    <button class="btn" onclick="exportPDF()">↗ Export PRD</button>
+    <button class="btn primary" onclick="startNew()">+ New</button>
+  </div>
+</header>
+
+<div class="stage-rail" id="stageRail" style="display:none"></div>
+
+<div class="main">
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div>
+        <div class="stage-focus" id="stageFocus">Thinking Space</div>
+        <div class="chat-heading" id="chatHeading">What's your idea?</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="product-name-chip" id="productNameChip">
+          <span class="product-name-label">Product</span>
+          <input class="product-name-input" id="productNameHeader" value="" placeholder="Unnamed"
+            title="Click to rename"
+            oninput="syncTitleFromHeader(this.value)"
+            onchange="syncTitleFromHeader(this.value)" />
+          <span class="product-name-badge" id="productNameBadge">✓ Named</span>
+        </div>
+        <div class="stage-pill" id="stagePill" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcomeMsg">
+        <div class="w-icon">🧠</div>
+        <div class="w-title">Think clearly,<br>build better.</div>
+        <div class="w-sub">Not a chatbot. A thinking system for early-stage founders who need to structure their idea into a real product.</div>
+        <div class="w-cards">
+          <div class="w-card" onclick="pickMode('guided')">
+            <div class="w-card-icon">🎯</div>
+            <div class="w-card-name">Guided PM</div>
+            <div class="w-card-desc">Deep thinking, stage by stage. Best for first-time founders.</div>
+          </div>
+          <div class="w-card" onclick="pickMode('founder')">
+            <div class="w-card-icon">⚡</div>
+            <div class="w-card-name">Founder</div>
+            <div class="w-card-desc">Faster, fewer questions. You know your space.</div>
+          </div>
+          <div class="w-card" onclick="pickMode('quick')">
+            <div class="w-card-icon">📝</div>
+            <div class="w-card-name">Quick Draft</div>
+            <div class="w-card-desc">Instant PRD from a rough idea. Refine after.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-context" id="inputContext" style="display:none">
+        <div class="input-context-dot"></div>
+        <span id="inputContextText"></span>
+      </div>
+      <div class="chips" id="chips">
+        <button class="chip" onclick="useChip('I want to build an app that...')">I want to build…</button>
+        <button class="chip" onclick="useChip('The problem I\'m solving is...')">The problem is…</button>
+        <button class="chip" onclick="useChip('My target users are...')">My users are…</button>
+      </div>
+      <div class="input-box">
+        <textarea id="userInput" rows="1"
+          placeholder="Describe your idea or answer the question…"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="send()">↑</button>
+      </div>
+      <div class="input-hint" id="inputHint">Enter to send · Shift+Enter for new line</div>
+    </div>
+  </div>
+
+  <div class="prd-panel" id="prdPanel">
+    <div class="prd-inner">
+      <div class="prd-top">
+        <div class="prd-eyebrow">Live PRD</div>
+        <div class="prd-name-row">
+          <input type="text" id="prdTitle" value="Untitled Product" placeholder="Product name…" title="Click to edit" />
+          <span class="edit-icon">✎</span>
+        </div>
+      </div>
+      <div class="prd-scroll">
+        <div class="prd-card" id="prdCard"></div>
+      </div>
+      <div class="prd-foot">
+        <div class="prog-row"><span>PRD Completion</span><span id="pct">0%</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- API KEY MODAL -->
+<div class="key-overlay hidden" id="keyOverlay">
+  <div class="key-modal">
+    <div class="key-modal-logo"><div class="key-modal-logo-dot"></div>PRD AGENT</div>
+    <h2>Add your Groq API key</h2>
+    <p>
+      PRD Agent uses <a href="https://groq.com" target="_blank">Groq</a> to power its AI thinking engine.
+      Get a free key in seconds at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> — no credit card needed.
+    </p>
+    <div class="key-input-wrap">
+      <input class="key-input" id="keyInput" type="password"
+        placeholder="gsk_..." autocomplete="off"
+        onkeydown="if(event.key==='Enter') saveKey()" />
+      <button class="key-save-btn" onclick="saveKey()">Save</button>
+    </div>
+    <div class="key-error" id="keyError">Please enter a valid Groq key starting with gsk_</div>
+    <div class="key-note">
+      <span class="key-note-icon">🔒</span>
+      <span>Your key is stored only in your browser's localStorage — never sent anywhere except api.groq.com. You can change it anytime via the key button in the header.</span>
+    </div>
+  </div>
+</div>
+
+<!-- SESSIONS SIDEBAR -->
+<div class="sessions-overlay" id="sessionsOverlay" onclick="toggleSessions()"></div>
+<div class="sessions-panel" id="sessionsPanel">
+  <div class="sessions-hd">
+    <div class="sessions-hd-title">Previous Sessions</div>
+    <button class="sessions-close" onclick="toggleSessions()">✕</button>
+  </div>
+  <div class="sessions-list" id="sessionsList"></div>
+  <div class="sessions-ft">
+    <button class="sessions-new-btn" onclick="toggleSessions(); startNew()">+ Start new session</button>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ──
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_KEY_STORAGE = 'prd_agent_groq_key';
+let GROQ_KEY = localStorage.getItem(GROQ_KEY_STORAGE) || '';
+
+// ── STAGES ──
+const STAGES = [
+  { id:'problem',    label:'Problem',     focus:'Problem Definition', placeholder:'What specific problem are you solving?',      ctaLabel:'Define the Problem'   },
+  { id:'users',      label:'Users',       focus:'User Clarity',       placeholder:'Who exactly experiences this problem?',        ctaLabel:'Clarify Your Users'   },
+  { id:'painpoints', label:'Pain Points', focus:'Pain Points',        placeholder:'What makes this problem costly or painful?',   ctaLabel:'Map the Pain'         },
+  { id:'solution',   label:'Solution',    focus:'Solution Design',    placeholder:'What is your proposed solution?',              ctaLabel:'Shape the Solution'   },
+  { id:'features',   label:'Features',    focus:'Feature Definition', placeholder:'What are the must-have features?',             ctaLabel:'Define Core Features' },
+  { id:'metrics',    label:'Metrics',     focus:'Success Metrics',    placeholder:'How will you measure success?',                ctaLabel:'Set Success Metrics'  },
+  { id:'overview',   label:'Overview',    focus:'Product Overview',   placeholder:'What would you call this product?',            ctaLabel:'Finalize Overview'    },
+];
+
+// ── PRD SECTIONS ──
+const SECTIONS = [
+  { k:'overview', label:'Product Overview', n:'01', ph:'What is this product?',           hint:'Give it a name and one-line description' },
+  { k:'users',    label:'Target Users',     n:'02', ph:'Primary and secondary users',     hint:'Be specific — not "everyone"' },
+  { k:'problem',  label:'Problem',          n:'03', ph:'The core problem being solved',   hint:'What pain do they feel today?' },
+  { k:'solution', label:'Solution',         n:'04', ph:'How the product solves it',       hint:'What does it actually do?' },
+  { k:'features', label:'Core Features',    n:'05', ph:'Key features and user stories',   hint:'What must exist for day one?' },
+  { k:'metrics',  label:'Success Metrics',  n:'06', ph:'How you will measure success',    hint:'Specific numbers, not vague goals' },
+];
+
+// ── STATE ──
+let mode = 'guided';
+let prdOpen = false;
+let history = [];
+let busy = false;
+let sessionStarted = false;
+let stageIdx = 0;
+let stageAnswers = 0;
+let ahaShown = false;
+let completionShown = false;
+let prd = { overview:'', users:'', problem:'', solution:'', features:'', metrics:'' };
+
+// ── PROMPTS ──
+const SYSTEM_GUIDED = `You are a sharp, warm product thinking partner working WITH an early-stage founder to clarify their idea.
+
+CURRENT STAGE: {STAGE_LABEL} (stage {STAGE_NUM} of 7)
+YOUR FOCUS: {STAGE_INSTRUCTION}
+
+TONE: Collaborative, not evaluative. Use "we", "let's", "this is a good direction". Sound like a trusted senior PM sitting next to them — encouraging AND rigorous.
+
+CORE RULES:
+1. ONE question per response. Never two. Ever.
+0. From your VERY FIRST response, always emit a PRD_UPDATE with a tentative **ProductName** in the overview field — even if just an inference. Update it as you learn more.
+2. Start with a micro-acknowledgment (max 8 words). Then ask.
+3. Keep responses SHORT. 1-2 sentences max before the question.
+4. No paragraphs. No lists unless offering options. No filler.
+
+CONFIDENCE-DRIVEN BEHAVIOR — use this, not message count:
+
+WEAK answer (vague, broad, under 15 words, no specifics):
+→ "Good start — let's make this sharper. [specific follow-up targeting the vagueness]"
+→ Stay in stage. Push for one more level of specificity.
+
+MEDIUM answer (partial specificity, some context):
+→ "This is getting clear. One more thing — [targeted clarifying question]"
+→ One more exchange, then advance.
+
+STRONG answer (specific user/pain/mechanism described with real detail):
+→ "That's clear — this is specific." + emit STAGE_COMPLETE
+→ Advance immediately.
+
+MICRO-REINFORCEMENTS to use naturally:
+- "That's clear."
+- "Good — this is specific."
+- "This is getting sharp."
+- "Solid direction."
+- "We're making progress."
+
+VAGUENESS EXAMPLES (always push back):
+- "help people", "everyone", "be more productive", "make it easier"
+- No user role or context named
+- No specific pain mechanism described
+
+QUALITY EXAMPLES (okay to advance):
+- Specific user with role + context: "freelance UX designers juggling 3+ client projects"
+- Real friction: "they track revisions in 4 different tools and lose feedback threads"
+- Concrete mechanism: "auto-syncs client feedback from email into a single revision log"
+- Measurable target: "80% of users complete their first project handoff within 7 days"
+
+WHEN ADVANCING — end message with exactly this on its own line:
+STAGE_COMPLETE
+
+Then emit:
+<PRD_UPDATE>
+{"overview":"...","users":"...","problem":"...","solution":"...","features":"...","metrics":"..."}
+</PRD_UPDATE>
+
+Only fill fields with real data. Use "" for unknowns.
+In overview, ALWAYS include a suggested product name even from the first PRD_UPDATE — infer a working name from the idea described so far. Format: **ProductName**: one-line description. Update the name as the session progresses if a better one emerges.`;
+
+const SYSTEM_FOUNDER = `You are a fast, opinionated product thinking partner for founders who know their space.
+
+CURRENT STAGE: {STAGE_LABEL}
+
+FOUNDER MODE RULES:
+- Move fast. Assume context. Make educated guesses.
+- Instead of asking "who is your user?" → say "Sounds like [assumed user type] — is that right?"
+- Instead of asking "what's the problem?" → say "So the core pain is [assumed pain] — correct?"
+- ONE response = ONE sharp thing. Either a confirmation + assumption, or a single question.
+- If they confirm your assumption → advance immediately.
+- If they correct you → note correction, advance.
+- Only push back if answer is genuinely unclear. Once per stage maximum.
+- NEVER ask generic questions. Always propose something and have them react.
+- Responses max 2 sentences.
+
+ASSUMPTION PATTERNS (use these):
+- "Sounds like [X] — is that right?"
+- "So the real pain here is [Y] — confirm?"
+- "I'm hearing [Z] as your core user — yes?"
+- "Let's call this [name] for now — does that fit?"
+
+After 1 confirmation or 1 substantive answer, advance:
+STAGE_COMPLETE
+
+<PRD_UPDATE>
+{"overview":"...","users":"...","problem":"...","solution":"...","features":"...","metrics":"..."}
+</PRD_UPDATE>
+
+IMPORTANT: From your very first response, always emit PRD_UPDATE with a tentative **ProductName**: description in the overview field — infer a working name from what they described. Updating the name each time you learn more is expected.`;
+
+const SYSTEM_QUICK = `You are a rapid PRD generator for early-stage founders.
+
+Output EXACTLY this format:
+
+THINKING_STEP: Analyzing the problem
+THINKING_STEP: Identifying users
+THINKING_STEP: Structuring the solution
+THINKING_STEP: Defining features
+THINKING_STEP: Setting metrics
+
+## PRD Draft: [Product Name]
+
+### Overview
+[2-3 crisp sentences. What it is, who it's for, what it does.]
+
+### Target Users
+[1 sentence. Specific user group — role, context, behavior. Not "everyone".]
+
+### Problem
+[2 sentences. The specific pain and why existing solutions fail.]
+
+### Solution
+[2 sentences. What the product does and how it uniquely solves the problem.]
+
+### Core Features
+- **[Feature]**: [what it does — one crisp line]
+- **[Feature]**: [what it does — one crisp line]
+- **[Feature]**: [what it does — one crisp line]
+- **[Feature]**: [what it does — one crisp line]
+
+### Success Metrics
+- **[Metric]**: [specific measurable target]
+- **[Metric]**: [specific measurable target]
+- **[Metric]**: [specific measurable target]
+
+---
+
+*[One refinement question — the single most important thing to clarify]*
+
+<PRD_UPDATE>
+{"overview":"...","users":"...","problem":"...","solution":"...","features":"...","metrics":"..."}
+</PRD_UPDATE>`;
+
+// ── STAGE OPENERS ──
+const STAGE_OPENERS = {
+  problem:    "Let's get this thinking structured. Start here: what specific problem are you solving — and for whom, exactly?",
+  users:      "Good direction. Now let's get precise — who specifically feels this problem the most? Describe them by role and context, not just category.",
+  painpoints: "We've got the who. Now: what does that person do *today* to handle this? Describe their workaround, and where it falls apart.",
+  solution:   "The problem space is clear. Now let's shape the solution — what does your product actually *do*? Describe the mechanism, not the category.",
+  features:   "Good. Let's prioritize. If you had to ship in 4 weeks, what's the ONE feature the product can't work without? Just one.",
+  metrics:    "Almost done. One last thing — how do we know this is working? Give us one specific number to aim for in the first 3 months.",
+  overview:   "We've covered everything. What would you call this product, and in one sentence — what does it do and who is it for?",
+};
+
+// Founder mode openers — assumptive, fast
+const FOUNDER_OPENERS = {
+  problem:    "What's the core pain you're solving? Give it to me in one line.",
+  users:      "Who's the primary user — I'm guessing [specific professional]? Confirm or correct.",
+  painpoints: "So today they're probably handling this with [workaround like spreadsheets/email/manual process] — right?",
+  solution:   "Got it. So your solution is essentially [mechanism] — is that the right frame?",
+  features:   "Core feature is probably [assumption] — what else is non-negotiable for day one?",
+  metrics:    "For a product like this, [X]% retention or [Y] completions in 30 days would be a strong signal. What's your target?",
+  overview:   "Let's name it. What are we calling this thing?",
+};
+
+// ── CONFIDENCE SCORING ──
+function scoreContent(text) {
+  if (!text || text.length < 20) return 'weak';
+  const specific = /\b(specifically|exactly|only|just|because|when|how|percent|%|\d+)\b/i.test(text);
+  if (text.length > 120 || specific) return 'strong';
+  if (text.length > 50) return 'medium';
+  return 'weak';
+}
+
+// ── STAGE RAIL ──
+function buildStageRail() {
+  const rail = document.getElementById('stageRail');
+  rail.innerHTML = '';
+  STAGES.forEach((s, i) => {
+    const item = document.createElement('div');
+    item.className = 'stage-item';
+    item.id = `stage-item-${i}`;
+    const isDone = i < stageIdx, isActive = i === stageIdx;
+    if (isDone) item.classList.add('done');
+    if (isActive) item.classList.add('active');
+    item.innerHTML = `<button class="stage-btn"><span class="stage-num">${isDone ? '✓' : i+1}</span>${s.label}</button>`;
+    rail.appendChild(item);
+    if (i < STAGES.length - 1) {
+      const a = document.createElement('div');
+      a.className = 'stage-arrow'; a.textContent = '›';
+      rail.appendChild(a);
+    }
+  });
+}
+
+function updateStageRail() {
+  STAGES.forEach((s, i) => {
+    const item = document.getElementById(`stage-item-${i}`);
+    if (!item) return;
+    item.className = 'stage-item';
+    if (i < stageIdx) item.classList.add('done');
+    if (i === stageIdx) item.classList.add('active');
+    const n = item.querySelector('.stage-num');
+    if (n) n.textContent = i < stageIdx ? '✓' : i+1;
+  });
+}
+
+function updateInputContext() {
+  if (!sessionStarted || mode === 'quick') return;
+  const stage = STAGES[stageIdx];
+  document.getElementById('inputContext').style.display = 'flex';
+  document.getElementById('inputContextText').textContent = `Now: ${stage.focus}`;
+  document.getElementById('userInput').placeholder = stage.placeholder;
+  document.getElementById('stageFocus').textContent = stage.focus;
+  document.getElementById('stagePill').textContent = `${stageIdx + 1} / ${STAGES.length}`;
+  document.getElementById('stagePill').style.display = 'block';
+  document.getElementById('inputHint').textContent = stage.ctaLabel + ' — Enter to send';
+  fadeOldMessages();
+}
+
+function fadeOldMessages() {
+  const msgs = document.querySelectorAll('.msg');
+  const total = msgs.length;
+  msgs.forEach((m, i) => {
+    if (i < total - 4) m.classList.add('old');
+    else m.classList.remove('old');
+  });
+}
+
+// ── PRD RENDER ──
+function renderPRD(flashKey) {
+  if (!prdOpen) return;
+  const title = document.getElementById('prdTitle').value || 'Untitled Product';
+  let filled = 0;
+
+  let h = `<div class="prd-card-hd"><h2>${xe(title)}</h2><p>Product Requirements Document</p></div>`;
+  SECTIONS.forEach(s => {
+    const txt = (prd[s.k]||'').trim(), has = txt.length > 0;
+    if (has) filled++;
+    const conf = has ? scoreContent(txt) : null;
+    const isFlash = flashKey === s.k;
+    h += `<div class="prd-sec${isFlash?' flash':''}" id="prd-row-${s.k}">
+      <div class="prd-sec-lbl">
+        <span class="sn${has?' done':''}">${s.n}</span>
+        ${s.label}
+        ${has ? `<span class="prd-confidence ${conf}">${conf === 'strong' ? 'Well defined' : conf === 'medium' ? 'Good start' : 'Needs clarity'}</span>` : ''}
+        ${has ? `<span class="prd-sec-status">✓</span>` : ''}
+      </div>
+      <div class="prd-sec-body${has?'':' empty'}">${has ? xe(txt) : s.ph}</div>
+      ${!has ? `<div class="prd-sec-hint">${s.hint}</div>` : conf === 'weak' ? `<div class="prd-sec-hint prd-sec-nudge">⚠ Too broad — needs more specificity</div>` : conf === 'medium' ? `<div class="prd-sec-hint">Getting clearer — push for more detail</div>` : ''}
+    </div>`;
+  });
+
+  document.getElementById('prdCard').innerHTML = h;
+  if (flashKey) {
+    setTimeout(() => {
+      document.getElementById(`prd-row-${flashKey}`)?.classList.remove('flash');
+    }, 1800);
+  }
+
+  const p = Math.round(filled/SECTIONS.length*100);
+  document.getElementById('progFill').style.width = p + '%';
+  document.getElementById('pct').textContent = p + '%';
+}
+
+function xe(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ── MARKDOWN ──
+function md(raw) {
+  let t = raw
+    .replace(/<PRD_UPDATE>[\s\S]*?<\/PRD_UPDATE>/g,'')
+    .replace(/^STAGE_COMPLETE\s*$/m,'')
+    .replace(/^THINKING_STEP:.*$/gm,'')
+    .trim();
+  t = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const lines = t.split('\n');
+  let out='', ul=false, ol=false;
+  const cL=()=>{ if(ul){out+='</ul>';ul=false;} if(ol){out+='</ol>';ol=false;} };
+  lines.forEach(ln => {
+    if(/^# (.+)/.test(ln))  { cL(); out+=`<h1>${il(ln.slice(2))}</h1>`; return; }
+    if(/^## (.+)/.test(ln)) { cL(); out+=`<h2>${il(ln.slice(3))}</h2>`; return; }
+    if(/^### (.+)/.test(ln)){ cL(); out+=`<h3>${il(ln.slice(4))}</h3>`; return; }
+    if(/^\*\*[^*]+\*\*$/.test(ln.trim())){ cL(); out+=`<h3>${il(ln.trim())}</h3>`; return; }
+    if(/^---+$/.test(ln.trim())){ cL(); out+='<hr>'; return; }
+    if(/^[-*] (.+)/.test(ln)){ if(!ul){cL();out+='<ul>';ul=true;} out+=`<li>${il(ln.replace(/^[-*] /,''))}</li>`; return; }
+    if(/^\d+\. (.+)/.test(ln)){ if(!ol){cL();out+='<ol>';ol=true;} out+=`<li>${il(ln.replace(/^\d+\. /,''))}</li>`; return; }
+    if(!ln.trim()){ cL(); out+='<br>'; return; }
+    cL(); out+=`<p>${il(ln)}</p>`;
+  });
+  cL(); return out;
+}
+
+function il(t) {
+  return t
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>');
+}
+
+// ── APPEND MESSAGE ──
+function appendMsg(role, raw, opts={}) {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  if (opts.currentQ) d.classList.add('current-q');
+
+  let bubble;
+  if (role === 'ai') {
+    if (mode === 'quick') {
+      const thinkLines = [];
+      const thinkRe = /^THINKING_STEP:\s*(.+)$/gm;
+      let m;
+      while ((m = thinkRe.exec(raw)) !== null) thinkLines.push(m[1].trim());
+      const draftRaw = raw
+        .replace(/^THINKING_STEP:.*$/gm,'')
+        .replace(/<PRD_UPDATE>[\s\S]*?<\/PRD_UPDATE>/g,'')
+        .replace(/^STAGE_COMPLETE\s*$/m,'')
+        .trim();
+      if (thinkLines.length > 0) {
+        const thinkHTML = '<ul>' + thinkLines.map(l => `<li>${il(l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'))}</li>`).join('') + '</ul>';
+        bubble = `<div class="think-block"><div class="think-label">💭 Thinking</div>${thinkHTML}</div>${md(draftRaw)}`;
+      } else {
+        bubble = md(raw);
+      }
+    } else {
+      bubble = md(raw);
+    }
+  } else {
+    bubble = `<p>${raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</p>`;
+  }
+
+  d.innerHTML = `<div class="msg-label">${role==='ai'?'PRD Agent':'You'}</div><div class="bubble">${bubble}</div>`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+  fadeOldMessages();
+  return d;
+}
+
+const STAGE_TRANSITIONS = {
+  users:      '✓ Problem defined \u2014 now let\u2019s identify who feels it',
+  painpoints: '✓ Users clear \u2014 now let\u2019s understand the friction',
+  solution:   '✓ Pain mapped \u2014 now let\u2019s shape the solution',
+  features:   '✓ Solution clear \u2014 now let\u2019s define what to build',
+  metrics:    '✓ Features scoped \u2014 now let\u2019s define success',
+  overview:   '✓ Metrics set \u2014 final step: give this product a name',
+};
+
+function appendStageBanner(label) {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'stage-banner';
+  const stageId = STAGES[stageIdx]?.id;
+  const msg = STAGE_TRANSITIONS[stageId] || `Moving to: ${label}`;
+  d.innerHTML = `<span>→</span> ${msg}`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+
+function appendConfirm(text) {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'confirm-flash';
+  d.innerHTML = `<span>✓</span> ${text}`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+  setTimeout(() => { d.style.opacity = '0'; setTimeout(() => d.remove(), 600); }, 3000);
+}
+
+// ── AHA MOMENT ── AI-generated reframing sentence
+async function showAhaMoment() {
+  if (ahaShown) return;
+  ahaShown = true;
+
+  // Show placeholder card immediately
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'aha-card';
+  d.id = 'ahaCard';
+  d.innerHTML = `<div class="aha-eyebrow">💡 Synthesizing your idea…</div><div class="aha-sentence" style="opacity:.4;font-size:14px;">Generating your clarity statement…</div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+
+  // Ask AI to generate a sharp reframing sentence
+  const ahaPrompt = `Based on this product context:
+- Users: ${prd.users || 'unclear'}
+- Problem: ${prd.problem || 'unclear'}
+- Solution: ${prd.solution || 'unclear'}
+
+Generate ONE sharp reframing sentence using this structure:
+"A way for [specific user] to [concrete goal] without [current pain/workaround]."
+
+Rules:
+- Be specific and concrete, not generic
+- Focus on what they AVOID (the workaround/pain), not just what they gain
+- Sound like a positioning statement, not a feature description
+- Max 25 words
+- Return ONLY the sentence, no explanation, no quotes`;
+
+  try {
+    let sentence = '';
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:80,
+          messages:[{role:'user',content:ahaPrompt}] })
+      });
+      if (res.ok) { const data = await res.json(); sentence = data.content?.[0]?.text?.trim() || ''; }
+    } catch(e) {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+        body: JSON.stringify({ model:GROQ_MODEL, max_tokens:80,
+          messages:[{role:'user',content:ahaPrompt}] })
+      });
+      if (res.ok) { const data = await res.json(); sentence = data.choices?.[0]?.message?.content?.trim() || ''; }
+    }
+
+    const card = document.getElementById('ahaCard');
+    if (card && sentence) {
+      card.innerHTML = `
+        <div class="aha-eyebrow">💡 Your product, reframed</div>
+        <div class="aha-sentence">"${sentence}"</div>
+        <div class="aha-sub">This is your clarity statement. Does this resonate? Keep it in mind as we continue.</div>`;
+    }
+  } catch(e) { document.getElementById('ahaCard')?.remove(); }
+}
+
+// ── CHECKPOINT ──
+function showCheckpoint() {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'checkpoint-card';
+
+  const rows = [
+    prd.problem ? { label:'Problem', val: prd.problem.slice(0,110) + (prd.problem.length>110?'…':''), key:'problem' } : null,
+    prd.users   ? { label:'Users',   val: prd.users.slice(0,110)   + (prd.users.length>110?'…':''),   key:'users'   } : null,
+    prd.solution? { label:'Solution',val: prd.solution.slice(0,110)+ (prd.solution.length>110?'…':''),key:'solution'} : null,
+  ].filter(Boolean);
+
+  const rowsHTML = rows.map(r => {
+    const conf = scoreContent(r.val);
+    return `<div class="checkpoint-row">
+      <span class="checkpoint-row-label">${r.label}</span>
+      <span class="checkpoint-row-val">${r.val}</span>
+      <span class="cp-confidence ${conf}">${conf==='strong'?'Strong':conf==='medium'?'Good':'Weak'}</span>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);font-size:13px;">Still building…</div>';
+
+  // Determine which checkpoint this is
+  const isFirstCP = stageIdx === 2;
+  const cpTitle = isFirstCP ? '\uD83D\uDD0D Good progress \u2014 let\u2019s check our foundation' : '\uD83D\uDD0D Halfway there \u2014 let\u2019s make sure this is solid';
+
+  d.innerHTML = `
+    <div class="checkpoint-title">${cpTitle}</div>
+    <div class="checkpoint-rows">${rowsHTML}</div>
+    <div class="checkpoint-btns">
+      <button class="cp-btn continue" onclick="continueFromCheckpoint(this)">Looks good, continue →</button>
+      <button class="cp-btn" onclick="editFromCheckpoint(this)">Something needs refining</button>
+    </div>`;
+
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+
+function continueFromCheckpoint(btn) {
+  btn.closest('.checkpoint-card').innerHTML = '<div style="font-size:13px;color:var(--accent);font-weight:500;padding:4px 0;">\u2713 Great \u2014 let\u2019s keep going.</div>';
+  setTimeout(() => { advanceStage(); askOpener(); }, 400);
+}
+
+function editFromCheckpoint(btn) {
+  btn.closest('.checkpoint-card').innerHTML = '<div style="font-size:13px;color:var(--text2);padding:4px 0;">What would you like to revise or add to?</div>';
+}
+
+// ── COMPLETION ──
+async function showCompletion() {
+  if (completionShown) return;
+  completionShown = true;
+
+  const c = document.getElementById('messages');
+
+  // Done card
+  const d = document.createElement('div');
+  d.className = 'done-card';
+  d.innerHTML = `
+    <div class="done-icon">🎉</div>
+    <div class="done-title">Your PRD is ready</div>
+    <div class="done-sub">You've worked through all 7 stages. Here's your complete product brief.</div>
+    <div class="done-btns">
+      <button class="done-btn primary" onclick="exportPDF()">↗ Export PRD</button>
+      <button class="done-btn" onclick="togglePRD()">View PRD</button>
+      <button class="done-btn" onclick="startNew()">Start New</button>
+    </div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+
+  // Key Insight card (AI-generated)
+  const insightCard = document.createElement('div');
+  insightCard.className = 'insight-card';
+  insightCard.id = 'insightCard';
+  insightCard.innerHTML = `<div class="insight-eyebrow">🧠 Generating key insight…</div><div class="insight-body" style="opacity:.4">Synthesizing your product thinking…</div>`;
+  c.appendChild(insightCard); c.scrollTop = c.scrollHeight;
+
+  const insightPrompt = `Based on this completed PRD:
+- Overview: ${prd.overview || 'N/A'}
+- Users: ${prd.users || 'N/A'}
+- Problem: ${prd.problem || 'N/A'}
+- Solution: ${prd.solution || 'N/A'}
+- Features: ${prd.features || 'N/A'}
+- Metrics: ${prd.metrics || 'N/A'}
+
+Generate a KEY INSIGHT — something non-obvious that reframes what this product really is.
+
+Format exactly like this (2-3 short paragraphs, no headers):
+
+"You're not building a [surface-level category].
+You're building a [deeper reframe of what it actually is]."
+
+Then in the next paragraph: "That means your core value is not [obvious thing] — it's [the real differentiator]."
+
+Then one sentence: "The biggest risk is [one specific thing to watch out for]."
+
+Be sharp, specific, and insightful. Sound like a senior PM giving honest, intelligent feedback.
+Max 80 words total. Return only the insight text.`;
+
+  try {
+    let insight = '';
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:180,
+          messages:[{role:'user',content:insightPrompt}] })
+      });
+      if (res.ok) { const data = await res.json(); insight = data.content?.[0]?.text?.trim() || ''; }
+    } catch(e) {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+        body: JSON.stringify({ model:GROQ_MODEL, max_tokens:180,
+          messages:[{role:'user',content:insightPrompt}] })
+      });
+      if (res.ok) { const data = await res.json(); insight = data.choices?.[0]?.message?.content?.trim() || ''; }
+    }
+    const card = document.getElementById('insightCard');
+    if (card && insight) {
+      // Render insight with italic formatting for quoted parts
+      const rendered = insight
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\n\n/g,'</p><p>').replace(/\n/g,' ');
+      card.innerHTML = `
+        <div class="insight-eyebrow">🧠 Key Insight</div>
+        <div class="insight-body"><p>${rendered}</p></div>`;
+    } else if (card) {
+      card.remove();
+    }
+  } catch(e) { document.getElementById('insightCard')?.remove(); }
+}
+
+// ── STAGE MANAGEMENT ──
+function advanceStage() {
+  if (stageIdx >= STAGES.length - 1) return;
+  stageIdx++;
+  stageAnswers = 0;
+  updateStageRail();
+  updateInputContext();
+
+  const stage = STAGES[stageIdx];
+  appendStageBanner(stage.label);
+
+  const confirmMap = {
+    users:      'Problem defined ✓',
+    painpoints: 'Users clarified ✓',
+    solution:   'Pain points mapped ✓',
+    features:   'Solution shaped ✓',
+    metrics:    'Features prioritized ✓',
+    overview:   'Metrics defined ✓',
+  };
+  if (confirmMap[stage.id]) appendConfirm(confirmMap[stage.id]);
+
+  // Show aha moment after users stage
+  if (stage.id === 'painpoints' && prd.problem && prd.users) {
+    setTimeout(() => showAhaMoment(), 500);
+  }
+}
+
+function askOpener() {
+  const stageId = STAGES[stageIdx].id;
+  const opener = mode === 'founder' 
+    ? (FOUNDER_OPENERS[stageId] || STAGE_OPENERS[stageId])
+    : STAGE_OPENERS[stageId];
+  if (opener) setTimeout(() => appendMsg('ai', opener, { currentQ: true }), 350);
+}
+
+function buildSystemPrompt() {
+  const stage = STAGES[stageIdx];
+  const base = mode === 'founder' ? SYSTEM_FOUNDER : SYSTEM_GUIDED;
+  return base
+    .replace('{STAGE_LABEL}', stage.label)
+    .replace('{STAGE_NUM}', stageIdx + 1)
+    .replace('{STAGE_INSTRUCTION}', `Understand the ${stage.label.toLowerCase()} deeply. Focus: ${stage.focus}.`);
+}
+
+// ── DOTS ──
+function showDots() {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className='msg ai'; d.id='dots';
+  d.innerHTML=`<div class="msg-label">PRD Agent</div><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+function removeDots() { document.getElementById('dots')?.remove(); }
+
+// ── QUICK STEPS ──
+const QUICK_STEPS = [
+  { label:'Analyzing the problem…' },
+  { label:'Identifying target users…' },
+  { label:'Structuring the solution…' },
+  { label:'Defining core features…' },
+  { label:'Setting success metrics…' },
+];
+
+function showQuickSteps() {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'quick-steps'; d.id = 'quickSteps';
+  d.innerHTML = QUICK_STEPS.map((s,i) =>
+    `<div class="quick-step" id="qstep-${i}"><div class="quick-step-icon">${i+1}</div><span>${s.label}</span></div>`
+  ).join('');
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+  let delay = 0;
+  QUICK_STEPS.forEach((_, i) => {
+    setTimeout(() => {
+      if (i > 0) {
+        const prev = document.getElementById(`qstep-${i-1}`);
+        if (prev) { prev.classList.remove('active'); prev.classList.add('done'); prev.querySelector('.quick-step-icon').textContent = '✓'; }
+      }
+      const cur = document.getElementById(`qstep-${i}`);
+      if (cur) cur.classList.add('active');
+    }, delay);
+    delay += 600;
+  });
+  setTimeout(() => {
+    const last = document.getElementById(`qstep-${QUICK_STEPS.length-1}`);
+    if (last) { last.classList.remove('active'); last.classList.add('done'); last.querySelector('.quick-step-icon').textContent = '✓'; }
+    setTimeout(() => document.getElementById('quickSteps')?.remove(), 500);
+  }, delay + 200);
+  return delay + 700;
+}
+
+// ── SEND ──
+async function send() {
+  const inp = document.getElementById('userInput');
+  const txt = inp.value.trim();
+  if (!txt || busy) return;
+
+  if (!sessionStarted) {
+    document.getElementById('welcomeMsg')?.remove();
+    document.getElementById('chips').style.display = 'none';
+    sessionStarted = true;
+    if (mode !== 'quick') {
+      document.getElementById('stageRail').style.display = 'flex';
+      buildStageRail();
+      updateInputContext();
+    }
+  }
+
+  if (!currentSessionId) currentSessionId = genId();
+  inp.value=''; inp.style.height='auto';
+  appendMsg('user', txt);
+  history.push({ role:'user', content:txt });
+  stageAnswers++;
+
+  await getReply();
+}
+
+// ── API ──
+async function callAnthropic(sys) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1500, system:sys, messages:history })
+  });
+  if (!res.ok) throw new Error('anthropic_'+res.status);
+  const data = await res.json();
+  return data.content?.map(b=>b.text||'').join('') || '';
+}
+
+async function callGroq(sys) {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+    body: JSON.stringify({ model:GROQ_MODEL, max_tokens:1500, messages:[{role:'system',content:sys},...history] })
+  });
+  if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||'groq_'+res.status); }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+async function getReply() {
+  busy=true; document.getElementById('sendBtn').disabled=true;
+
+  let quickDelay = 0;
+  if (mode==='quick' && history.length===1) { quickDelay=showQuickSteps(); } else { showDots(); }
+
+  const sys = mode==='quick' ? SYSTEM_QUICK : buildSystemPrompt();
+
+  try {
+    await new Promise(r=>setTimeout(r, mode==='quick'?quickDelay:0));
+
+    let full='';
+    try { full = await callAnthropic(sys); } catch(e) { full = await callGroq(sys); }
+
+    removeDots();
+
+    // Parse PRD update
+    const prdMatch = full.match(/<PRD_UPDATE>([\s\S]*?)<\/PRD_UPDATE>/);
+    let flashKey = null;
+    if (prdMatch) {
+      try {
+        const upd = JSON.parse(prdMatch[1].trim());
+        Object.keys(upd).forEach(k => {
+          if (upd[k]?.trim() && upd[k] !== prd[k]) { prd[k]=upd[k]; flashKey=k; }
+        });
+        if (upd.overview) {
+          const nm = upd.overview.match(/\*\*([^*:]+)/);
+          if (nm) {
+            const detectedName = nm[1].trim();
+            const currentTitle = document.getElementById('prdTitle').value;
+            // Only update if still "Untitled" or clearly AI-assigned name
+            if (!currentTitle || currentTitle === 'Untitled Product' || currentTitle === detectedName) {
+              document.getElementById('prdTitle').value = detectedName;
+              revealProductNameChip(detectedName);
+            }
+          }
+        }
+        if (prdOpen) renderPRD(flashKey);
+      } catch(e){}
+    }
+
+    history.push({ role:'assistant', content:full });
+    appendMsg('ai', full, { currentQ: mode!=='quick' });
+
+    // Stage progression
+    if (mode !== 'quick') {
+      const stageComplete = full.includes('STAGE_COMPLETE');
+
+      if (stageComplete) {
+        if (stageIdx >= STAGES.length - 1) {
+          // Final stage done
+          setTimeout(() => showCompletion(), 600);
+        } else if (stageIdx === 2 || stageIdx === 4) {
+          // Checkpoint
+          setTimeout(() => showCheckpoint(), 700);
+        } else {
+          setTimeout(() => { advanceStage(); askOpener(); }, 700);
+        }
+      } else if (stageAnswers >= 5) {
+        // Force advance if genuinely stuck
+        if (stageIdx < STAGES.length - 1) {
+          stageAnswers = 0;
+          setTimeout(() => { advanceStage(); askOpener(); }, 700);
+        }
+      }
+    } else if (prdMatch) {
+      // Quick mode: check if complete enough to show completion
+      const filled = Object.values(prd).filter(v=>v.trim()).length;
+      if (filled >= 5) setTimeout(() => showCompletion(), 1200);
+    }
+
+  } catch(err) {
+    removeDots();
+    appendMsg('ai', `⚠ ${err.message||'Connection error. Please try again.'}`);
+  }
+
+  busy=false; document.getElementById('sendBtn').disabled=false;
+  if (sessionStarted) saveCurrentSession();
+}
+
+// ── TOGGLE PRD ──
+function togglePRD() {
+  prdOpen=!prdOpen;
+  document.getElementById('prdPanel').classList.toggle('open',prdOpen);
+  const btn=document.getElementById('prdBtn');
+  btn.classList.toggle('prd-on',prdOpen);
+  btn.textContent=prdOpen?'◧ Hide PRD':'◧ Live PRD';
+  if(prdOpen) renderPRD();
+}
+
+// ── EXPORT ──
+async function exportPDF() {
+  const titleEl = document.getElementById('prdTitle');
+  const productName = titleEl ? titleEl.value.trim() || 'Untitled Product' : 'Untitled Product';
+  toast('Building PRD document\u2026');
+
+  // Enrich content via AI
+  const enrichPrompt = `You are a professional product writer. Expand this PRD data into rich, document-quality prose.
+
+Product: ${productName}
+Overview: ${prd.overview || 'not provided'}
+Users: ${prd.users || 'not provided'}
+Problem: ${prd.problem || 'not provided'}
+Solution: ${prd.solution || 'not provided'}
+Features: ${prd.features || 'not provided'}
+Metrics: ${prd.metrics || 'not provided'}
+
+Rules per field:
+- overview: 2-3 sentences. What it is, who it serves, what it does.
+- users: 2-3 sentences. Specific role, context, behavior — not just demographics.
+- problem: 3 sentences. The specific pain, its real-world impact, why existing tools fail.
+- solution: 3 sentences. The mechanism, the approach, what makes it different.
+- features: 4-5 items. Each on its own line: "FeatureName — one sentence of what it does and why."
+- metrics: 3-4 items. Each on its own line: "MetricName — specific number/target with context."
+- insight: 2 sentences. A sharp non-obvious observation about what this product really is at its core.
+
+If input is vague, infer reasonable specifics. Return ONLY valid JSON:
+{"overview":"...","users":"...","problem":"...","solution":"...","features":"Feature 1 — desc\nFeature 2 — desc\nFeature 3 — desc\nFeature 4 — desc","metrics":"Metric 1 — target\nMetric 2 — target\nMetric 3 — target","insight":"..."}`;
+
+  let rich = { overview: prd.overview||'', users: prd.users||'', problem: prd.problem||'',
+               solution: prd.solution||'', features: prd.features||'', metrics: prd.metrics||'', insight: '' };
+
+  try {
+    let raw = '';
+    try {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1400,
+          messages:[{role:'user',content:enrichPrompt}] })
+      });
+      if (r.ok) { const d = await r.json(); raw = d.content?.[0]?.text?.trim()||''; }
+    } catch(e) {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+        body: JSON.stringify({ model:GROQ_MODEL, max_tokens:1400,
+          messages:[{role:'user',content:enrichPrompt}] })
+      });
+      if (r.ok) { const d = await r.json(); raw = d.choices?.[0]?.message?.content?.trim()||''; }
+    }
+    if (raw) {
+      const jm = raw.match(/\{[\s\S]*\}/);
+      if (jm) {
+        const parsed = JSON.parse(jm[0]);
+        Object.keys(parsed).forEach(k => { if (parsed[k]?.trim()) rich[k] = parsed[k]; });
+      }
+    }
+  } catch(e) { /* fall back to raw prd */ }
+
+  // Strip markdown bold from all fields
+  const cl = s => (s||'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*/g,'').trim();
+
+  // Build feature cards
+  const featureItems = cl(rich.features).split('\n').filter(Boolean).map(line => {
+    const dashIdx = line.indexOf(' — ');
+    if (dashIdx > -1) {
+      const name = line.slice(0, dashIdx).replace(/^[-•]\s*/,'').trim();
+      const desc = line.slice(dashIdx + 3).trim();
+      return `<div class="feat-item"><div class="feat-name">${name}</div><div class="feat-desc">${desc}</div></div>`;
+    }
+    return `<div class="feat-item"><div class="feat-desc">${line.replace(/^[-•]\s*/,'')}</div></div>`;
+  }).join('');
+
+  // Build metric cards
+  const metricItems = cl(rich.metrics).split('\n').filter(Boolean).map(line => {
+    const dashIdx = line.indexOf(' — ');
+    if (dashIdx > -1) {
+      const label = line.slice(0, dashIdx).replace(/^[-•]\s*/,'').trim();
+      const val   = line.slice(dashIdx + 3).trim();
+      // Try to extract a number/short value for big display
+      const numMatch = val.match(/^([\d,.%+<>~₹$£€]+\s*\w*)/);
+      const bigNum = numMatch ? numMatch[1].trim() : '';
+      const rest   = bigNum ? val.slice(bigNum.length).replace(/^[\s,–—-]+/,'') : val;
+      return `<div class="metric-card"><div class="metric-label">${label}</div>${bigNum?`<div class="metric-val">${bigNum}</div>`:''}<div class="metric-desc">${rest||val}</div></div>`;
+    }
+    return `<div class="metric-card"><div class="metric-desc">${line.replace(/^[-•]\s*/,'')}</div></div>`;
+  }).join('');
+
+  const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const modeLabel = mode === 'guided' ? 'Guided PM' : mode === 'founder' ? 'Founder' : 'Quick Draft';
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — ${productName}</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:#f7f6f2;color:#18170f;line-height:1.6;padding:40px 20px 80px;}
+  .doc{max-width:780px;margin:0 auto;}
+
+  /* COVER */
+  .cover{background:#fff;border:1px solid #e4e2d9;border-radius:14px;padding:36px 40px 28px;margin-bottom:32px;position:relative;overflow:hidden;}
+  .cover::before{content:'PRD';position:absolute;right:32px;top:16px;font-family:'Inter',sans-serif;font-weight:700;font-size:72px;color:#f0f0ec;letter-spacing:-2px;line-height:1;pointer-events:none;}
+  .cover-eyebrow{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9a9888;margin-bottom:10px;}
+  .cover-title{font-family:'DM Serif Display',serif;font-size:36px;font-style:italic;color:#18170f;line-height:1.15;margin-bottom:8px;}
+  .cover-tagline{font-size:15px;color:#3f3d33;line-height:1.7;max-width:560px;margin-bottom:24px;}
+  .cover-meta{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid #e4e2d9;padding-top:18px;}
+  .meta-chip{font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid #e4e2d9;color:#6b6960;background:#fafaf8;}
+  .meta-chip strong{font-weight:500;color:#18170f;}
+
+  /* TOC */
+  .toc{background:#fff;border:1px solid #e4e2d9;border-radius:10px;padding:18px 22px;margin-bottom:32px;}
+  .toc-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#9a9888;margin-bottom:12px;}
+  .toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 20px;}
+  .toc-item{font-size:13px;color:#6b6960;padding:4px 0;}
+  .toc-num{font-weight:600;color:#cbc9bf;margin-right:7px;font-size:11px;}
+
+  /* SECTIONS */
+  .section{background:#fff;border:1px solid #e4e2d9;border-radius:12px;padding:28px 32px;margin-bottom:20px;}
+  .section-hd{display:flex;align-items:baseline;gap:12px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #e4e2d9;}
+  .section-num{font-size:11px;font-weight:600;color:#cbc9bf;min-width:24px;}
+  .section-title{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;color:#18170f;}
+  .section-tag{margin-left:auto;font-size:11px;padding:3px 10px;border-radius:99px;background:#e6f3eb;color:#2a6b3f;font-weight:500;flex-shrink:0;}
+  .prose{font-size:15px;line-height:1.78;color:#18170f;}
+  .prose+.prose{margin-top:12px;}
+
+  /* CALLOUT */
+  .callout{border-left:3px solid #c8d8f0;background:#f0f4ff;padding:14px 18px;border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;color:#1e2a4a;line-height:1.65;}
+  .callout strong{font-weight:600;display:block;margin-bottom:4px;color:#1b5a8a;}
+
+  /* FEATURES */
+  .feat-grid{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+  .feat-item{display:flex;gap:14px;align-items:flex-start;padding:12px 14px;background:#f7f6f2;border-radius:8px;}
+  .feat-item::before{content:'';width:8px;height:8px;border-radius:50%;background:#2a6b3f;flex-shrink:0;margin-top:6px;}
+  .feat-name{font-size:13.5px;font-weight:600;color:#18170f;min-width:140px;flex-shrink:0;}
+  .feat-desc{font-size:13.5px;color:#3f3d33;line-height:1.6;}
+
+  /* METRICS */
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:4px;}
+  .metric-card{background:#f7f6f2;border:1px solid #e4e2d9;border-radius:10px;padding:16px 18px;}
+  .metric-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9a9888;margin-bottom:6px;}
+  .metric-val{font-family:'DM Serif Display',serif;font-size:28px;color:#2a6b3f;margin-bottom:4px;line-height:1.1;}
+  .metric-desc{font-size:12.5px;color:#6b6960;line-height:1.55;}
+
+  /* INSIGHT */
+  .insight-block{background:#fffbef;border:1px solid #e8d48a;border-radius:10px;padding:20px 24px;margin-bottom:20px;}
+  .insight-eyebrow{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#a08030;margin-bottom:10px;}
+  .insight-text{font-family:'DM Serif Display',serif;font-size:17px;color:#6b5520;line-height:1.65;font-style:italic;}
+
+  /* FOOTER */
+  .footer{text-align:center;margin-top:40px;font-size:12px;color:#9a9888;padding-top:20px;border-top:1px solid #e4e2d9;}
+
+  @media print{
+    body{background:#fff;padding:0;}
+    .cover,.section,.toc,.insight-block{box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <div class="cover">
+    <div class="cover-eyebrow">Product Requirements Document</div>
+    <div class="cover-title">${productName}</div>
+    <div class="cover-tagline">${cl(rich.overview)}</div>
+    <div class="cover-meta">
+      <span class="meta-chip"><strong>Date</strong> ${date}</span>
+      <span class="meta-chip"><strong>Mode</strong> ${modeLabel}</span>
+      <span class="meta-chip"><strong>Tool</strong> PRD Agent</span>
+      <span class="meta-chip"><strong>Status</strong> Draft v1.0</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-label">Contents</div>
+    <div class="toc-grid">
+      <div class="toc-item"><span class="toc-num">01</span>Target Users</div>
+      <div class="toc-item"><span class="toc-num">02</span>Problem</div>
+      <div class="toc-item"><span class="toc-num">03</span>Solution</div>
+      <div class="toc-item"><span class="toc-num">04</span>Core Features</div>
+      <div class="toc-item"><span class="toc-num">05</span>Success Metrics</div>
+    </div>
+  </div>
+
+  ${rich.insight ? `<div class="insight-block">
+    <div class="insight-eyebrow">💡 Key Insight</div>
+    <div class="insight-text">${cl(rich.insight)}</div>
+  </div>` : ''}
+
+  <div class="section">
+    <div class="section-hd">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Target Users</h2>
+      <span class="section-tag">Who</span>
+    </div>
+    <p class="prose">${cl(rich.users)}</p>
+  </div>
+
+  <div class="section">
+    <div class="section-hd">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Problem</h2>
+      <span class="section-tag">Why</span>
+    </div>
+    <p class="prose">${cl(rich.problem)}</p>
+  </div>
+
+  <div class="section">
+    <div class="section-hd">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Solution</h2>
+      <span class="section-tag">How</span>
+    </div>
+    <p class="prose">${cl(rich.solution)}</p>
+    ${rich.insight ? `<div class="callout"><strong>Why this works</strong>${cl(rich.insight)}</div>` : ''}
+  </div>
+
+  <div class="section">
+    <div class="section-hd">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Core Features</h2>
+      <span class="section-tag">What</span>
+    </div>
+    <div class="feat-grid">${featureItems}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-hd">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Success Metrics</h2>
+      <span class="section-tag">Measure</span>
+    </div>
+    <div class="metric-grid">${metricItems}</div>
+  </div>
+
+  <div class="footer">${productName} &nbsp;·&nbsp; PRD v1.0 &nbsp;·&nbsp; Generated ${date} with PRD Agent</div>
+</div>
+</body>
+</html>`;
+
+  // Open in new tab — user can Cmd+P to save as PDF with perfect fidelity
+  const blob = new Blob([html], {type:'text/html'});
+  const url  = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  toast('PRD opened \u2014 use Cmd+P / Ctrl+P to save as PDF');
+}
+
+// ── PRODUCT NAME CHIP ──
+function revealProductNameChip(name) {
+  const chip = document.getElementById('productNameChip');
+  const input = document.getElementById('productNameHeader');
+  if (!chip || !input) return;
+  const wasUnnamed = !chip.classList.contains('visible');
+  input.value = name;
+  input.size = Math.max(8, Math.min(name.length + 2, 30));
+  chip.classList.add('visible');
+  // Re-animate badge to draw attention when name changes
+  const badge = document.getElementById('productNameBadge');
+  if (badge) {
+    badge.style.animation = 'none';
+    void badge.offsetWidth; // reflow
+    badge.style.animation = 'fadeIn .5s ease';
+  }
+}
+
+function syncTitleFromHeader(val) {
+  // Keep PRD panel title in sync
+  const el = document.getElementById('prdTitle');
+  if (el) el.value = val;
+  if (prdOpen) renderPRD();
+}
+
+// ── UTILS ──
+function setMode(m) {
+  mode=m;
+  document.querySelectorAll('.mode-tab').forEach((t,i)=>t.classList.toggle('active',['guided','founder','quick'][i]===m));
+  toast(`Mode: ${m==='guided'?'Guided PM':m==='founder'?'Founder':'Quick Draft'}`);
+}
+
+function pickMode(m) { setMode(m); document.getElementById('userInput').focus(); }
+function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} }
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+function useChip(t) { document.getElementById('userInput').value=t; document.getElementById('userInput').focus(); }
+
+// ── API KEY MODAL ──
+function showKeyModal() {
+  document.getElementById('keyOverlay').classList.remove('hidden');
+  const existing = localStorage.getItem(GROQ_KEY_STORAGE) || '';
+  document.getElementById('keyInput').value = existing;
+  setTimeout(() => document.getElementById('keyInput').focus(), 100);
+}
+
+function hideKeyModal() {
+  document.getElementById('keyOverlay').classList.add('hidden');
+  document.getElementById('keyError').classList.remove('show');
+}
+
+function saveKey() {
+  const val = document.getElementById('keyInput').value.trim();
+  if (!val.startsWith('gsk_') || val.length < 20) {
+    document.getElementById('keyError').classList.add('show');
+    document.getElementById('keyInput').classList.add('error');
+    return;
+  }
+  GROQ_KEY = val;
+  localStorage.setItem(GROQ_KEY_STORAGE, val);
+  hideKeyModal();
+  toast('API key saved ✓');
+}
+
+// Close modal on overlay click
+document.addEventListener('click', e => {
+  if (e.target.id === 'keyOverlay') hideKeyModal();
+});
+
+// Check key on load — show modal if missing and not in claude.ai
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem(GROQ_KEY_STORAGE);
+  if (saved) { GROQ_KEY = saved; return; }
+  // Only show modal if not inside claude.ai (where Anthropic API handles it)
+  const host = window.location.hostname;
+  const isClaudeAI = host.includes('claude.ai') || host === '' || host === 'localhost' || host === '127.0.0.1';
+  if (!isClaudeAI) {
+    setTimeout(() => showKeyModal(), 600);
+  }
+});
+
+// ── SESSION PERSISTENCE ──
+const SESSION_KEY = 'prd_agent_sessions';
+let currentSessionId = null;
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function saveCurrentSession() {
+  if (!sessionStarted) return;
+  const title = document.getElementById('prdTitle').value || 'Untitled Product';
+  const filled = Object.values(prd).filter(v=>v.trim()).length;
+  const pct = Math.round(filled/6*100);
+
+  const sessionData = { id: currentSessionId, title, pct, mode,
+    prd: {...prd}, history: [...history],
+    stageIdx, savedAt: Date.now() };
+
+  const all = loadAllSessions();
+  const existing = all.findIndex(s => s.id === currentSessionId);
+  if (existing >= 0) all[existing] = sessionData;
+  else all.unshift(sessionData);
+
+  // Keep max 20 sessions
+  const trimmed = all.slice(0, 20);
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(trimmed)); } catch(e) {}
+}
+
+function loadAllSessions() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function deleteSession(id, e) {
+  e.stopPropagation();
+  const all = loadAllSessions().filter(s => s.id !== id);
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(all)); } catch(e) {}
+  renderSessionsList();
+  toast('Session deleted');
+}
+
+function loadSession(session) {
+  // Save current first
+  if (sessionStarted) saveCurrentSession();
+
+  currentSessionId = session.id;
+  prd = {...session.prd};
+  history = [...session.history];
+  stageIdx = session.stageIdx || 0;
+  stageAnswers = 0;
+  sessionStarted = true;
+  ahaShown = false;
+  completionShown = false;
+  mode = session.mode || 'guided';
+
+  // Update mode tabs
+  document.querySelectorAll('.mode-tab').forEach((t,i) =>
+    t.classList.toggle('active', ['guided','founder','quick'][i] === mode));
+
+  // Update UI
+  document.getElementById('prdTitle').value = session.title;
+  if (session.title && session.title !== 'Untitled Product') {
+    revealProductNameChip(session.title);
+  }
+
+  // Rebuild chat from history
+  document.getElementById('welcomeMsg')?.remove();
+  document.getElementById('chips').style.display = 'none';
+  const msgs = document.getElementById('messages');
+  msgs.innerHTML = '';
+
+  // Replay messages
+  history.forEach(m => {
+    const d = document.createElement('div');
+    d.className = `msg ${m.role === 'user' ? 'user' : 'ai'}`;
+    let bubble;
+    if (m.role === 'user') {
+      bubble = `<p>${m.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</p>`;
+    } else {
+      bubble = md(m.content);
+    }
+    d.innerHTML = `<div class="msg-label">${m.role==='user'?'You':'PRD Agent'}</div><div class="bubble">${bubble}</div>`;
+    msgs.appendChild(d);
+  });
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Stage rail
+  document.getElementById('stageRail').style.display = mode !== 'quick' ? 'flex' : 'none';
+  if (mode !== 'quick') { buildStageRail(); updateInputContext(); }
+
+  if (prdOpen) renderPRD();
+  toggleSessions();
+  toast('Session loaded: ' + session.title);
+}
+
+function renderSessionsList() {
+  const list = document.getElementById('sessionsList');
+  const sessions = loadAllSessions();
+  if (sessions.length === 0) {
+    list.innerHTML = '<div class="sessions-empty">No saved sessions yet.<br>Your sessions save automatically as you work.</div>';
+    return;
+  }
+  list.innerHTML = sessions.map(s => {
+    const date = new Date(s.savedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+    const isActive = s.id === currentSessionId;
+    return `<div class="session-item${isActive?' active-session':''}" onclick="loadSession(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+      <div class="session-item-name">${s.title}</div>
+      <div class="session-item-meta">
+        <span>${date}</span>
+        <span class="session-item-pct">${s.pct}%</span>
+        <span class="session-item-del" onclick="deleteSession('${s.id}', event)">✕</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSessions() {
+  const panel = document.getElementById('sessionsPanel');
+  const overlay = document.getElementById('sessionsOverlay');
+  const isOpen = panel.classList.contains('open');
+  if (!isOpen) renderSessionsList();
+  panel.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+}
+
+// Auto-save every 30s
+setInterval(() => { if (sessionStarted) saveCurrentSession(); }, 30000);
+
+function startNew() {
+  if (sessionStarted) saveCurrentSession();
+  if(!confirm('Start a new session? Current progress is saved.')) return;
+  currentSessionId = genId();
+  prd={overview:'',users:'',problem:'',solution:'',features:'',metrics:''};
+  history=[]; stageIdx=0; stageAnswers=0; sessionStarted=false; ahaShown=false; completionShown=false;
+  if (!currentSessionId) currentSessionId = genId();
+  document.getElementById('prdTitle').value='Untitled Product';
+  const chip = document.getElementById('productNameChip');
+  const hdrInput = document.getElementById('productNameHeader');
+  if (chip) chip.classList.remove('visible');
+  if (hdrInput) hdrInput.value = '';
+  document.getElementById('stageRail').style.display='none';
+  document.getElementById('stageRail').innerHTML='';
+  document.getElementById('inputContext').style.display='none';
+  document.getElementById('stagePill').style.display='none';
+  document.getElementById('stageFocus').textContent='Thinking Space';
+  document.getElementById('chatHeading').textContent="What's your idea?";
+  document.getElementById('userInput').placeholder='Describe your idea or answer the question…';
+  document.getElementById('inputHint').textContent='Enter to send · Shift+Enter for new line';
+  if(prdOpen) renderPRD();
+  const msgs=document.getElementById('messages');
+  msgs.innerHTML='';
+  const w=document.createElement('div');
+  w.className='welcome'; w.id='welcomeMsg';
+  w.innerHTML=`
+    <div class="w-icon">🧠</div>
+    <div class="w-title">Think clearly,<br>build better.</div>
+    <div class="w-sub">Not a chatbot. A thinking system for early-stage founders who need to structure their idea into a real product.</div>
+    <div class="w-cards">
+      <div class="w-card" onclick="pickMode('guided')"><div class="w-card-icon">🎯</div><div class="w-card-name">Guided PM</div><div class="w-card-desc">Deep thinking, stage by stage. Best for first-time founders.</div></div>
+      <div class="w-card" onclick="pickMode('founder')"><div class="w-card-icon">⚡</div><div class="w-card-name">Founder</div><div class="w-card-desc">Faster, fewer questions. You know your space.</div></div>
+      <div class="w-card" onclick="pickMode('quick')"><div class="w-card-icon">📝</div><div class="w-card-name">Quick Draft</div><div class="w-card-desc">Instant PRD from a rough idea. Refine after.</div></div>
+    </div>`;
+  msgs.appendChild(w);
+  document.getElementById('chips').style.display='flex';
+}
+
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
